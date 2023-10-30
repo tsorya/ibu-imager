@@ -2,6 +2,7 @@ package seed_creator
 
 import (
 	"fmt"
+	cp "github.com/otiai10/copy"
 	"log"
 	"os"
 	"path"
@@ -228,6 +229,13 @@ func (s *SeedCreator) backupEtc() error {
 	if !os.IsNotExist(err) {
 		return err
 	}
+
+	// save old ip as it is required for installation process by installation-configuration.sh
+	err = cp.Copy("/var/run/nodeip-configuration/primary-ip", "/etc/default/seed-ip")
+	if err != nil {
+		return err
+	}
+
 	// Execute 'ostree admin config-diff' command and backup etc.deletions
 	args := []string{"admin", "config-diff", "|", "awk", `'$1 == "D" {print "/etc/" $2}'`, ">",
 		path.Join(s.backupDir, "/etc.deletions")}
